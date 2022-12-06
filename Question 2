@@ -1,1 +1,43 @@
+int dfs(vector<vector<int>>& matrix, int i, int j, vector<vector<int>>&dp) { // create function that uses DFS
+    if (dp[i][j] != -1) return dp[i][j]; // sets a place to compare
+    int top;
+    if (i - 1 < 0 || matrix[i-1][j] <= matrix[i][j]) // sets the top value
+        top = 1;
+    else top = 1+dfs(matrix, i - 1, j, dp); // increase by 1
+
+    int bot;
+    if (i + 1 >= matrix.size() || matrix[i+1][j] <= matrix[i][j]) // detemines the bottom 
+        bot = 1;
+    else
+        bot = 1+dfs(matrix, i+1, j, dp); // increase by 1
+    int left;
+    if (j - 1 < 0 || matrix[i][j-1] <= matrix[i][j]) // goes left if the value is bigger
+        left = 1;
+    else
+        left = 1+dfs(matrix, i, j - 1, dp);
+
+    int right;
+    if (j+1 >= matrix[0].size() || matrix[i][j+1] <= matrix[i][j]) // goes right if the value is bigger 
+        right = 1;
+    else
+        right = 1+dfs(matrix, i, j+1, dp);
+
+    dp[i][j] = max(max(left, right), max(top, bot)); // final 
+    return dp[i][j];
+}
+
+class Solution {
+public:
+    int longestIncreasingPath(vector<vector<int>>& matrix) { // determines the longest increasing path
+        int m = matrix.size(), n = matrix[0].size(); // creates m the size of the martix and n the size starting at 0
+        vector<vector<int>> dp(m, vector<int>(n, -1));
+        int ret = 0;
+        for (int i = 0; i < m; i++) { // goes through the rows and colums 
+            for (int j = 0; j < n; j++) { 
+                ret = max(ret, dfs(matrix, i, j, dp)); // final 
+            }
+        }
+        return ret;
+    }
+};
 
