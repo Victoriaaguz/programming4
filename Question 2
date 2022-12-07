@@ -1,43 +1,66 @@
-int dfs(vector<vector<int>>& matrix, int i, int j, vector<vector<int>>&dp) { // create function that uses DFS
-    if (dp[i][j] != -1) return dp[i][j]; // sets a place to compare
-    int top;
-    if (i - 1 < 0 || matrix[i-1][j] <= matrix[i][j]) // sets the top value
-        top = 1;
-    else top = 1+dfs(matrix, i - 1, j, dp); // increase by 1
+// All 4 directions : right, left, down, up
+// (0, 1), (0, -1), (1, 0), (-1, 0)
 
-    int bot;
-    if (i + 1 >= matrix.size() || matrix[i+1][j] <= matrix[i][j]) // detemines the bottom 
-        bot = 1;
-    else
-        bot = 1+dfs(matrix, i+1, j, dp); // increase by 1
-    int left;
-    if (j - 1 < 0 || matrix[i][j-1] <= matrix[i][j]) // goes left if the value is bigger
-        left = 1;
-    else
-        left = 1+dfs(matrix, i, j - 1, dp);
-
-    int right;
-    if (j+1 >= matrix[0].size() || matrix[i][j+1] <= matrix[i][j]) // goes right if the value is bigger 
-        right = 1;
-    else
-        right = 1+dfs(matrix, i, j+1, dp);
-
-    dp[i][j] = max(max(left, right), max(top, bot)); // final 
-    return dp[i][j];
+int dx[4] = {0,  0, 1, -1}; //creation of our 4x4 grid
+int dy[4] = {1, -1, 0,  0};
+//bool that tests/compares four ints and whether x is greater than or equal to 0 AND x is less than n AND y is greater than or 
+//equal to 0 AND y is less than m; all must be true for bool to be true
+bool isValid(int x, int y, int n, int m) { 
+    if(x >= 0 && x < n && y >= 0 && y < m) return true;
+    return false;
 }
+//bfs implementation of our four ints using a queue pair with the push method.
+void bfs(int x, int y, int n, int m, vector<vector<int>> &dist, vector<vector<int>> &grid) {
 
-class Solution {
-public:
-    int longestIncreasingPath(vector<vector<int>>& matrix) { // determines the longest increasing path
-        int m = matrix.size(), n = matrix[0].size(); // creates m the size of the martix and n the size starting at 0
-        vector<vector<int>> dp(m, vector<int>(n, -1));
-        int ret = 0;
-        for (int i = 0; i < m; i++) { // goes through the rows and colums 
-            for (int j = 0; j < n; j++) { 
-                ret = max(ret, dfs(matrix, i, j, dp)); // final 
+    queue<pair<int, int>> q;
+
+    q.push({x, y});
+ //while queue is empty set values to false.
+    while(q.empty() == false) {
+        //while false set pair to front of queue and pop.
+        pair<int, int> temp = q.front();
+        q.pop();
+        //set x1 and y1 to temp values first and second respectively.
+        int x1 = temp.first;
+        int y1 = temp.second;
+        //for statement
+        for(int i=0; i<4; i++) {
+          //creation and setting of values for wX and wY as the temporary x,y value from earlier in the while loop 
+          //(line24-25).
+            int wX = temp.first + dx[i];
+            int wY = temp.second + dy[i];
+          //if our four ints are valid set value to true.
+            if(isValid(wX, wY, n, m) == true) {
+               //if i + 1 is equal to the grid x,y and distance x,y  is less than our temp wX,wY then set distance of wX and wY
+               // equal to the distance of x,y, then push.
+                if(i + 1 == grid[x1][y1] && dist[x1][y1] < dist[wX][wY]) {
+                    dist[wX][wY] = dist[x1][y1];
+                    q.push({wX, wY});
+                }
+                //else if the distance x,y + 1 is less than the distance wX,wY then set the distance of wX,wY to the distance
+                //x,y + 1, then push.
+                else if(dist[x1][y1] + 1 < dist[wX][wY]) {
+                    dist[wX][wY] = dist[x1][y1] + 1;
+                    q.push({wX, wY});
+                }
             }
         }
-        return ret;
     }
-};
+    //return statement
+    return;
+}
+//minimum cost function
+int minCost(vector<vector<int>>& grid) {
+//int n equal to grid size and int m is equal to the amount of grids
+    int n = grid.size();
+    int m = grid[0].size();
+    //return 0 statement
+    if(n == 0)                                                  return 0;
+    //implementation of of bfs and grids taking in our vectors and ints from earlier.
+    vector<vector<int>> dist(n, vector<int>(m, INT_MAX));
 
+    dist[0][0] = 0;
+
+    bfs(0, 0, n, m, dist, grid);
+    //return distance n-1 * m-1
+    return dist[n-1][m-1];
